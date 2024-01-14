@@ -1,0 +1,73 @@
+;/*++
+;
+;Copyright (c) ReactOS. All rights reserved. Ported by CoolStar
+;
+;Module Name:
+;    usbohci.inf
+;
+;Abstract:
+;    INF file for installing the USB OHCI Miniport Driver
+;
+;
+;--*/
+
+[Version]
+Signature   = "$WINDOWS NT$"
+Class       = USB
+ClassGuid   = {36FC9E60-C465-11CF-8056-444553540000}
+Provider    = ReactOS
+CatalogFile = usbohci-ros.cat
+PnpLockdown = 1
+
+[DestinationDirs]
+DefaultDestDir = 12
+
+; ================= Class section =====================
+
+[SourceDisksNames]
+1 = %DiskId1%,,,""
+
+[SourceDisksFiles]
+usbohci-ros.sys  = 1,,
+
+;*****************************************
+; USBOHCI  Install Section
+;*****************************************
+
+[Manufacturer]
+%StdMfg%=Standard,NT$ARCH$
+
+; Decorated model section take precedence over undecorated 
+; ones on XP and later.
+[Standard.NT$ARCH$]
+%USBOHCI.DeviceDesc%=USBOHCI_Device, ACPI\RKCP4F48
+
+[USBOHCI_Device.NT]
+CopyFiles=Drivers_Dir
+
+[USBOHCI_Device.NT.HW]
+Include=pci.inf
+Needs=PciD3ColdSupported.HW
+
+[Drivers_Dir]
+usbohci-ros.sys
+
+;-------------- Service installation
+[USBOHCI_Device.NT.Services]
+AddService = USBOHCI,%SPSVCINST_ASSOCSERVICE%, USBOHCI_Service_Inst
+
+; -------------- USBOHCI driver install sections
+[USBOHCI_Service_Inst]
+DisplayName    = %USBOHCI.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START 
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\usbohci-ros.sys
+LoadOrderGroup = Base
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+StdMfg                 = "ReactOS"
+DiskId1                = "USB OHCI Miniport Driver"
+USBOHCI.DeviceDesc = "Standard Open USB Host Controller"
+USBOHCI.SVCDESC    = "USB OHCI Miniport Driver"
